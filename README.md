@@ -7,7 +7,7 @@ Please contact me at jpenn@princeton.edu if you have any questions :)
 Attribution: 
 Please cite as
 
-Penn, J., Deutsch, C. (2022). Analysis scripts and model code for "Avoiding Ocean Mass Extinction from Climate warming" (Version v1.0.0). 
+Penn, J., Deutsch, C. (2022). Analysis scripts and model code for "Avoiding Ocean Mass Extinction from Climate warming" [![DOI](https://zenodo.org/badge/451704269.svg)](https://zenodo.org/badge/latestdoi/451704269) (Version v1.0.0). 
 
 Penn, J., Deutsch, C. (2022). "Avoiding Ocean Mass Extinction from Climate warming" (under revision). 
 
