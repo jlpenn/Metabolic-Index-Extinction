@@ -1,0 +1,67 @@
+Notes on CMIP data downloading and processing 
+
+This document describes how to download and process the CMIP archive data for inputs to the extinction model code. 
+Briefly, the data is to be annually averaged (if not already when downloaded) and regridded to the WOA grid before an anomaly field is created by subtracting the pre-industrial time-mean fields (1850-1900) from each model year in the greenhouse gas forcing experiments (e.g., historical, rcp8.5, ssp5-8.5, etc.). 
+
+Downloading the data
+An OpenID from ESGF is required for the downloading.
+
+Standard website for CMIP5:
+https://esgf-node.llnl.gov/search/cmip5/
+
+Standard website for CMIP6:
+https://esgf-node.llnl.gov/search/cmip6/
+
+Alternate website for CMIP6 at DKRZ:
+https://esgf-data.dkrz.de/search/cmip6-dkrz/
+
+Alternate website for CMIP6 at IPSL:
+https://esgf-node.ipsl.upmc.fr/search/cmip6-ipsl/
+
+In all web interfaces, select variables by categories, e.g., Source ID (= model), Experiment ID (= historical etc.), Frequency (annual, monthly etc.), and Variable (the shorthand name) or CF Standard Name (the long name of the variables). 
+The Realm (e.g., ocean or ocnBgchem) can be selected first to show only the relevant variables for this realm. Click the Search button for successive updates. 
+Every time this is done, the Variables list on the left will be updated and available files will be shown on the right.
+
+If multiple variables or experiments are downloaded, it's best to add the files successively to the Data Cart, and finally go to the Data Cart and create the wget script.
+
+For wget, use the "-s" option, e.g.:
+bash $file -s            [for one wget script]
+for file in wget*; do bash $file -s ; done       [for multiple scripts]
+
+
+Storing the data on the server
+The top level directory has subdirectories CMIP5 and CMIP6. In the following it will be referred to as $CMIP_ROOT.
+Each of these has subdirectories for each experiment - their names must be exactly the same as the model names that are used within the file names, e.g. IPSL-CM6A-LR
+
+Each model directory has subdirectories for the experiments (e.g., historical and rcp8.5 for CMIP5 or ssp585 for CMIP6).
+Each of the experiment directories has a subdirectory called native_grid. All files on the native model grid should be stored in there, whereas all files on the WOA grid should be stored in the "main" directory for each model/experiment.
+
+The wget script (which can contain files for different models and experiments) should be run in $CMIP_ROOT/CMIP6 or $CMIP_ROOT/CMIP5, respectively.
+
+Script process_cmip_files.py is run in the same directory.
+
+It will concatenate separate files (by time) for each model/experiment/variable combination into one and move all *.nc files in the current directory to the appropriate model/experiment/native_grid subdirectories. 
+Directories will be created if necessary.
+The -k option is useful in those cases where extended runs (to 2300) exist; you may want to keep the original files. 
+
+
+Processing the data
+Note: For all Python scripts described below, the nco operators must be installed in a standard path. Typically, this is done by installing the nco RPM.
+
+Creation of annual means from monthly means
+
+This requires averaging over 12 months at a time. (Note that for CMIP5 data from Hadley, files typically span December to November, not January to December. In most cases, I disregarded this and averaged from December to November.)
+To achieve this with nco, one would have to run a loop over the years and run ncrcat for one year at a time.
+Matlab function nc_rec_avg achieves the same goal with a single function call of the form
+nc_rec_avg(fname_in, fname_out)
+
+Note that this Matlab function (and many others) are built upon the old USGS netcdf toolbox, not the modern Matlab-internal netcdf functions.
+
+
+Regridding to standard 1x1 degree WOA grid
+This can be done with the cdo command.   [This must be downloaded directly from DKRZ and compiled on the local machine. There is no CentOS package for it.]
+Regrid2WOA_cdo.pl is a wrapper script that sets the correct options for the cdo command, handles file renaming etc.
+(Invoke it with option -h to see all options.)
+
+The normal call is simply
+Regrid2WOA_cdo.pl  <input_files>
